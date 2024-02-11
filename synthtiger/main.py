@@ -9,7 +9,7 @@ import pprint
 import time
 
 import synthtiger
-
+from tqdm import tqdm
 
 def run(args):
     if args.config is not None:
@@ -33,10 +33,10 @@ def run(args):
     if args.output is not None:
         template.init_save(args.output)
 
-    for idx, (task_idx, data) in enumerate(generator):
+    for idx, (task_idx, data) in enumerate(tqdm(generator, total=args.count, desc="Generating data")):
         if args.output is not None:
             template.save(args.output, data, task_idx)
-        print(f"Generated {idx + 1} data (task {task_idx})")
+        # print(f"Generated {idx + 1} data (task {task_idx})")
 
     if args.output is not None:
         template.end_save(args.output)
