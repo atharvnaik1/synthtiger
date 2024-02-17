@@ -86,13 +86,15 @@ class BaseTexture(Component):
         for path in self.paths:
             if not os.path.exists(path):
                 continue
+                import sys
+                sys.exit(f"Specified path: {path} not exists on disk..")
 
             paths = [path]
             if os.path.isdir(path):
                 paths = utils.search_files(path, exts=[".jpg", ".jpeg", ".png", ".bmp"])
-
             self._paths.append(paths)
             self._counts.append(len(paths))
+            print(f"Total background images: {len(paths)}")
 
     def _read_texture(self, path, grayscale=False):
         texture = Image.open(path)
@@ -112,6 +114,9 @@ class BaseTexture(Component):
         return width, height
 
     def _sample_texture(self):
+        if len(self._counts) == 0:
+            raise Exception(f"Error! background images count zero. Please ensure proper dir path")
+
         key = np.random.choice(len(self.paths), p=self._probs)
         if self._counts[key] == 0:
             raise RuntimeError(f"There is no texture: {self.paths[key]}")
