@@ -10,6 +10,9 @@ import time
 
 import synthtiger
 from tqdm import tqdm
+from pathlib import Path
+import os
+import sys
 
 def run(args):
     if args.config is not None:
@@ -28,6 +31,8 @@ def run(args):
         seed=args.seed,
         retry=True,
         verbose=args.verbose,
+        font_wise_separate_data=args.font_wise_separate_data,
+        font_dir=args.font_dir,
     )
 
     if args.output is not None:
@@ -101,6 +106,23 @@ def parse_args():
         nargs="?",
         help="Config file path.",
     )
+    parser.add_argument(
+        "-fsd",
+        "--font_wise_separate_data",
+        action="store_true",
+        help="""
+            if font_wise_separate_data set to True it will store data for each font
+            else it will generate original format mix of data. Default to false.
+        """,
+        default=False,
+    )
+    parser.add_argument(
+        "-fd",
+        "--font_dir",
+        type=str,
+        nargs="?",
+        help="Define a font directory to be used",
+    )
     args = parser.parse_args()
 
     pprint.pprint(vars(args))
@@ -112,6 +134,48 @@ def main():
     start_time = time.time()
     args = parse_args()
     run(args)
+    if args.font_wise_separate_data:
+        # Create font (path) list
+        if args.font_dir:
+            fonts = [
+                os.path.join(args.font_dir, p)
+                for p in os.listdir(args.font_dir)
+                if os.path.splitext(p)[1] == ".ttf"
+            ]
+        elif args.font:
+            if os.path.isfile(args.font):
+                fonts = [args.font]
+            else:
+                sys.exit("Cannot open font")
+        else:
+            fonts = load_fonts(args.language)
+
+        # TODO -- replace print messages with loguru logger
+        print(f"INFO : Total font files: {len(fonts)}")
+
+        # KEEP ORIGINAL OUTPUT DIR
+        original_output_dir = args.output_dir
+
+        for font in fonts:
+            font_stem = Path(font).stem
+            print(f"=" * 50)
+            print(f"Generating data for font : {font_stem}")
+            args_dict = vars(args)
+
+            # update font and output dir
+            args_dict["font_dir"] = None
+            args_dict["font"] = font
+            args_dict["output_dir"] = os.path.join(original_output_dir, font_stem)
+            os.makedirs(args_dict["output_dir"], exist_ok=True)
+
+            # pass argparse argument to function as-kwargs
+            generate_text_data(**args_dict)
+            print("\n")
+    else:
+        ## Default mode
+        generate_text_data(**vars(args))
+
+
     end_time = time.time()
     print(f"{end_time - start_time:.2f} seconds elapsed")
 
