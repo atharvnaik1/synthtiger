@@ -169,11 +169,11 @@ def main():
             os.makedirs(args_dict["output_dir"], exist_ok=True)
 
             # pass argparse argument to function as-kwargs
-            generate_text_data(**args_dict)
-            print("\n")
-    else:
-        ## Default mode
-        generate_text_data(**vars(args))
+    #         generate_text_data(**args_dict)
+    #         print("\n")
+    # else:
+    #     ## Default mode
+    #     generate_text_data(**vars(args))
 
 
     end_time = time.time()
