@@ -123,11 +123,13 @@ def parse_args():
         nargs="?",
         help="Define a font directory to be used",
     )
-    args = parser.parse_args()
+    # args = parser.parse_args()
 
-    pprint.pprint(vars(args))
+    # pprint.pprint(vars(args))
 
-    return args
+    # return args
+    return parser.parse_args()
+
 
 
 def main():
